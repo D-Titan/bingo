@@ -28,11 +28,22 @@ jobs:
           cat <<EOF > ~/.config/godot/editor_settings-4.tres
           [gd_resource type="EditorSettings" format=3]
           [resource]
-          export/android/android_sdk_path = "$ANDROID_SDK_ROOT"
+          export/android/android_sdk_path = "${ANDROID_HOME}"
           export/android/debug_keystore = "/home/runner/.android/debug.keystore"
           export/android/debug_keystore_user = "androiddebugkey"
           export/android/debug_keystore_pass = "android"
           EOF
+
+      - name: Fix Android Configuration
+        run: |
+          # Replaces the invalid dynamic name with a strict, valid Android package name
+          sed -i 's/package\/unique_name=.*/package\/unique_name="com.godot.bingogame"/g' export_presets.cfg
+          sed -i 's/package\/name=.*/package\/name="BingoGame"/g' export_presets.cfg
+          
+          # Injects the keystore paths directly into the preset file
+          echo 'keystore/debug="/home/runner/.android/debug.keystore"' >> export_presets.cfg
+          echo 'keystore/debug_user="androiddebugkey"' >> export_presets.cfg
+          echo 'keystore/debug_password="android"' >> export_presets.cfg
 
       - name: Download and Install Godot
         run: |
@@ -55,10 +66,10 @@ jobs:
       - name: Export Debug APK
         run: |
           mkdir -p build
-          godot --headless --export-debug "Android" build/game.apk
+          godot --headless --export-debug "Android" build/bingo_game.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Android-APK
-          path: build/game.apk
+          path: build/bingo_game.apk
