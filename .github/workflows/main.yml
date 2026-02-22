@@ -17,7 +17,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # This creates the signing file that your export_presets.cfg is missing
+      # REQUIRED: This creates the actual file the config looks for
       - name: Generate Debug Keystore
         run: |
           keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
@@ -25,21 +25,12 @@ jobs:
       - name: Godot Export
         uses: firebelley/godot-export@v6.0.0
         with:
-          # Official Linux Headless executable
           godot_executable_download_url: https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
-          # Official Export Templates (the .tpz file)
           godot_export_templates_download_url: https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
           relative_project_path: ./
           archive_output: false
           presets_to_export: "Android" 
           relative_export_path: ./build/android
-        env:
-          # Link the generated keystore to the Godot export process
-          GODOT_ANDROID_DEBUG_KEYSTORE_PATH: "debug.keystore"
-          GODOT_ANDROID_DEBUG_KEYSTORE_USER: "androiddebugkey"
-          GODOT_ANDROID_DEBUG_KEYSTORE_PASS: "android"
-          # Tell Godot where the SDK is on the GitHub runner
-          ANDROID_HOME: /usr/local/lib/android/sdk
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
