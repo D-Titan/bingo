@@ -11,32 +11,30 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v4
 
-      # 1. Setup Java 17 (Required for Godot 4.4.1 Android builds)
+      # 1. Java 17 is mandatory for Godot 4+ Android exports
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 2. Fix "Android configuration error" by setting SDK path in Editor Settings
-      - name: Configure Godot Android Settings
-        run: |
-          mkdir -p ~/.config/godot
-          echo '[resource]
-          export/android/android_sdk_path = "'$ANDROID_HOME'"
-          export/android/debug_keystore = "'$HOME'/.android/debug.keystore"
-          export/android/debug_keystore_user = "androiddebugkey"
-          export/android/debug_keystore_pass = "android"' > ~/.config/godot/editor_settings-4.tres
-
-      # 3. Perform the Export for Godot 4.4.1
-      - name: Build Android APK
-        uses: dulvui/godot-android-export@v4
+      # 2. Use firebelley/godot-export with 4.4.1 URLs
+      - name: Godot Export
+        uses: firebelley/godot-export@v6.0.0
         with:
-          godot-version: 4.4.1
-          working-directory: .
+          # Official Linux Headless download link
+          godot_executable_download_url: https://github.com
+          # Official Export Templates download link
+          godot_export_templates_download_url: https://github.com
+          relative_project_path: ./
+          archive_output: false
+          # Ensure this matches the name in your export_presets.cfg
+          presets_to_export: "Android" 
+          # Export to a specific folder
+          relative_export_path: ./build/android
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Android-APK-4.4.1
-          path: ./**/*.apk
+          name: Android-APK
+          path: ./build/android/**/*.apk
