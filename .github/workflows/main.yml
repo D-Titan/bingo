@@ -1,39 +1,23 @@
-name: Export Android APK
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+name: "Build Android APK"
+on: [push, pull_request]
 
 jobs:
-  export:
+  export-android:
     runs-on: ubuntu-latest
+    name: Export Android APK
     steps:
-      - name: Checkout Project
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - name: Godot Android Export
+        # This action handles Godot, Templates, Java, and Android SDK automatically
+        uses: dulvui/godot-android-export@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          godot-version: 4.4.1  # Change to your exact version
+          working-directory: .   # Path to your project.godot file
 
-      # REQUIRED: This creates the actual file the config looks for
-      - name: Generate Debug Keystore
-        run: |
-          keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-
-      - name: Godot Export
-        uses: firebelley/godot-export@v6.0.0
-        with:
-          godot_executable_download_url: https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
-          godot_export_templates_download_url: https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-          relative_project_path: ./
-          archive_output: false
-          presets_to_export: "Android" 
-          relative_export_path: ./build/android
-
-      - name: Upload APK to Artifacts
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Android-APK
-          path: ./build/android/**/*.apk
+          name: android-apk
+          path: build/android/*.apk  # Matches the path in your Godot Export Preset
