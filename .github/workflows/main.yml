@@ -36,14 +36,9 @@ jobs:
 
       - name: Fix Android Configuration
         run: |
-          # Replaces the invalid dynamic name with a strict, valid Android package name
-          sed -i 's/package\/unique_name=.*/package\/unique_name="com.godot.bingogame"/g' export_presets.cfg
-          sed -i 's/package\/name=.*/package\/name="BingoGame"/g' export_presets.cfg
-          
-          # Injects the keystore paths directly into the preset file
-          echo 'keystore/debug="/home/runner/.android/debug.keystore"' >> export_presets.cfg
-          echo 'keystore/debug_user="androiddebugkey"' >> export_presets.cfg
-          echo 'keystore/debug_password="android"' >> export_presets.cfg
+          # The '^' ensures we only replace the exact matching lines, preventing overlaps!
+          sed -i 's|^package/unique_name=.*|package/unique_name="com.godot.bingogame"|g' export_presets.cfg
+          sed -i 's|^package/name=.*|package/name="BingoGame"|g' export_presets.cfg
 
       - name: Download and Install Godot
         run: |
