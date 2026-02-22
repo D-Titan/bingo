@@ -11,14 +11,32 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v4
 
+      # 1. Setup Java 17 (Required for Godot 4.4.1 Android builds)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 2. Fix "Android configuration error" by setting SDK path in Editor Settings
+      - name: Configure Godot Android Settings
+        run: |
+          mkdir -p ~/.config/godot
+          echo '[resource]
+          export/android/android_sdk_path = "'$ANDROID_HOME'"
+          export/android/debug_keystore = "'$HOME'/.android/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"' > ~/.config/godot/editor_settings-4.tres
+
+      # 3. Perform the Export for Godot 4.4.1
       - name: Build Android APK
         uses: dulvui/godot-android-export@v4
         with:
-          godot-version: 4.4.1 # Change this to your specific Godot version (e.g., 4.3.0)
+          godot-version: 4.4.1
           working-directory: .
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Android-APK
+          name: Android-APK-4.4.1
           path: ./**/*.apk
